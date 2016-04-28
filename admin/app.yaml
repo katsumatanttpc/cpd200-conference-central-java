@@ -1,9 +1,11 @@
 application: cpd200demo1
 module: admin
-version: lab03
+version: lab04
 runtime: go
 api_version: go1
 
 handlers:
 - url: /.*
   script: _go_app
+  login: admin
+  secure: always
