@@ -13,6 +13,9 @@ import com.google.training.cpd200.conference.form.ProfileForm;
 import com.google.training.cpd200.conference.form.ProfileForm.TeeShirtSize;
 import com.googlecode.objectify.Key;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Defines conference APIs.
  */
@@ -25,8 +28,8 @@ import com.googlecode.objectify.Key;
     )
 public class ConferenceApi {
 
-    // private static final Logger LOG = Logger.getLogger(
-    //        ConferenceApi.class.getName());
+    private static final Logger LOG = Logger.getLogger(
+        ConferenceApi.class.getName());
 
     /*
      * Get the display name from the user's email. For example, if the email is
@@ -112,6 +115,7 @@ public class ConferenceApi {
         String userId = ""; // TODO
         Key key = null; // TODO
         Profile profile = null;
+        LOG.log(Level.INFO, "Did run getProfile()");
         return profile;
     }
 }

@@ -1,6 +1,6 @@
 application: cpd200demo1
 module: admin
-version: lab04
+version: alpha-002
 runtime: go
 api_version: go1
 
