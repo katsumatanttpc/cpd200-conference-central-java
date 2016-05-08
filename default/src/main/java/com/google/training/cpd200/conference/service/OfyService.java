@@ -1,5 +1,6 @@
 package com.google.training.cpd200.conference.service;
 
+import com.google.training.cpd200.conference.domain.Conference;
 import com.google.training.cpd200.conference.domain.Profile;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyFactory;
@@ -14,6 +15,7 @@ public class OfyService {
      */
     static {
         factory().register(Profile.class);
+        factory().register(Conference.class);
     }
 
     /**
