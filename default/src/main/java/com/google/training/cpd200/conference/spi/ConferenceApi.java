@@ -12,10 +12,14 @@ import com.google.training.cpd200.conference.Constants;
 import com.google.training.cpd200.conference.domain.Conference;
 import com.google.training.cpd200.conference.domain.Profile;
 import com.google.training.cpd200.conference.form.ConferenceForm;
+import com.google.training.cpd200.conference.form.ConferenceQueryForm;
 import com.google.training.cpd200.conference.form.ProfileForm;
 import com.google.training.cpd200.conference.form.ProfileForm.TeeShirtSize;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.cmd.Query;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -202,5 +206,83 @@ public class ConferenceApi {
         ofy().save().entities(conference, profile).now();
     
         return conference;
+    }
+
+    /**
+     * Queries against the datastore with the given filters and returns the result.
+     *
+     * Normally this kind of method is supposed to get invoked by a GET HTTP method,
+     * but we do it with POST, in order to receive conferenceQueryForm Object via the POST body.
+     *
+     * @param conferenceQueryForm A form object representing the query.
+     * @return A List of Conferences that match the query.
+     */
+    @ApiMethod(
+            name = "queryConferences",
+            path = "queryConferences",
+            httpMethod = HttpMethod.POST
+    )
+    public List<Conference> queryConferences(ConferenceQueryForm conferenceQueryForm) {
+        Iterable<Conference> conferenceIterable = conferenceQueryForm.getQuery();
+        List<Conference> result = new ArrayList<>(0);
+        List<Key<Profile>> organizersKeyList = new ArrayList<>(0);
+        for (Conference conference : conferenceIterable) {
+            organizersKeyList.add(Key.create(Profile.class, conference.getOrganizerUserId()));
+            result.add(conference);
+        }
+        // To avoid separate datastore gets for each Conference, pre-fetch the Profiles.
+        ofy().load().keys(organizersKeyList);
+        return result;
+    }
+    
+    /**
+     * Returns a list of Conferences that the user created.
+     * In order to receive the websafeConferenceKey via the JSON params, uses a POST method.
+     *
+     * @param user A user who invokes this method, null when the user is not signed in.
+     * @return a list of Conferences that the user created.
+     * @throws UnauthorizedException when the user is not signed in.
+     */
+    @ApiMethod(
+            name = "getConferencesCreated",
+            path = "getConferencesCreated",
+            httpMethod = HttpMethod.POST
+    )
+    public List<Conference> getConferencesCreated(final User user) throws UnauthorizedException {
+        // If not signed in, throw a 401 error.
+        if (user == null) {
+            throw new UnauthorizedException("Authorization required");
+        }
+        String userId = user.getUserId();
+        Key<Profile> userKey = Key.create(Profile.class, userId);
+        return ofy().load().type(Conference.class)
+                .ancestor(userKey)
+                .list();
+    }
+
+    @ApiMethod(
+            name = "filterPlayground",
+            path = "filterPlayground",
+            httpMethod = HttpMethod.POST
+    )
+    public List<Conference> filterPlayground() {
+        Query<Conference> query = ofy().load().type(Conference.class);
+
+        // Filter on city
+        // query = query.filter("city =", "Paris");
+
+        /*
+        TODO
+        add 2 filters:
+        1: city equals to Chicago
+        2: topic equals "Medical Innovations"
+        */
+      
+        // Filter on city = "Chicago"
+        query = query.filter("city =", "Chicago");
+        // Add a filter for topic = "Medical Innovations"
+        query = query.filter("topics =", "Medical Innovations");
+        
+        return query.list();
     }
 }
